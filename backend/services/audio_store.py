@@ -2,14 +2,18 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from api.errors import AppError
 from config import Settings, get_settings
 from services.audio_probe import ProbeResult
 
 logger = logging.getLogger(__name__)
+
+AUDIO_ID_PATTERN = re.compile(r"^aud_[0-9a-f]+$")
 
 
 def audio_storage_dir(settings: Settings | None = None) -> Path:
@@ -63,3 +67,54 @@ def save_audio(
         settings.audio_ttl_hours,
     )
     return audio_id
+
+
+def load_audio(
+    audio_id: str,
+    stage: str,
+    settings: Settings | None = None,
+) -> tuple[bytes, dict]:
+    settings = settings or get_settings()
+    missing = AppError(
+        404,
+        "AUDIO_NOT_FOUND",
+        "录音不存在或已过期，请重新录音上传。",
+        stage,
+    )
+    if not AUDIO_ID_PATTERN.fullmatch(audio_id):
+        raise missing
+
+    folder = audio_storage_dir(settings).resolve()
+    audio_path = (folder / f"{audio_id}.webm").resolve()
+    meta_path = (folder / f"{audio_id}.json").resolve()
+    try:
+        audio_path.relative_to(folder)
+        meta_path.relative_to(folder)
+    except ValueError as exc:
+        raise missing from exc
+
+    if not audio_path.is_file() or not meta_path.is_file():
+        raise missing
+
+    try:
+        metadata = json.loads(meta_path.read_text(encoding="utf-8"))
+        created_at = datetime.fromisoformat(str(metadata["created_at"]))
+    except (OSError, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
+        raise missing from exc
+
+    if created_at.tzinfo is None:
+        created_at = created_at.replace(tzinfo=timezone.utc)
+    if is_expired(created_at, settings):
+        logger.info("audio expired id=%s", audio_id)
+        raise missing
+
+    try:
+        data = audio_path.read_bytes()
+    except OSError as exc:
+        raise missing from exc
+
+    if not data:
+        raise missing
+
+    logger.info("audio loaded id=%s bytes=%s", audio_id, len(data))
+    return data, metadata
