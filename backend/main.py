@@ -1,10 +1,13 @@
 import uuid
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from api.errors import AppError, app_error_handler, validation_error_handler
 from api.health import router as health_router
+from api.upload import router as upload_router
 from config import get_settings
 
 settings = get_settings()
@@ -28,7 +31,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_exception_handler(AppError, app_error_handler)
+app.add_exception_handler(RequestValidationError, validation_error_handler)
 app.include_router(health_router)
+app.include_router(upload_router)
 
 if __name__ == "__main__":
     import uvicorn

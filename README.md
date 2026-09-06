@@ -30,7 +30,9 @@ python -m uvicorn main:app --reload --host 127.0.0.1 --port 8003
 python -m pytest
 ```
 
-只覆盖 `GET /health`。Mock 通过不能证明真实 ASR、搜店或语音播报已跑通。
+当前 Mock 覆盖 `GET /health` 和 `POST /upload` 的成功/失败分支，不调用真实 ffprobe。Mock 通过不能证明真实录音校验、ASR、搜店或语音播报已跑通。
+
+`POST /upload` 用本机 `ffprobe` 探测真实容器、编码和时长（只探测，不转码）。Windows 可用 `winget install Gyan.FFmpeg`。后端会在 PATH、WinGet 安装目录和 `FFPROBE_PATH` 中查找，不要求当前终端一定能直接运行 `ffprobe`。缺少 Duration 标签的浏览器 WebM 不会因此直接判为非法，会再看音频流时长或数据包时间戳。
 
 ## 真实接口验收
 

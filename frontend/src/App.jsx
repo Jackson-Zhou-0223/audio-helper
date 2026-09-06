@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { getHealth } from "./api.js";
+import CitySelect from "./components/CitySelect.jsx";
+import Recorder from "./components/Recorder.jsx";
 
 function App() {
+  const [city, setCity] = useState("杭州");
   const [health, setHealth] = useState({
     label: "检查中",
     detail: "正在请求后端 /health",
@@ -49,11 +52,13 @@ function App() {
   return (
     <main className="page">
       <section className="card">
-        <p className="eyebrow">第一版骨架</p>
+        <p className="eyebrow">第一版</p>
         <h1>语音约碰面地点</h1>
         <p className="lead">
-          后续将支持按住说话，为同一座城市的两个人推荐中间附近的店铺。本轮只验证页面能打开，以及后端健康检查。
+          选择城市后按住说话。本轮只做本地录音、试听和下载，不会上传或识别。
         </p>
+        <CitySelect value={city} onChange={setCity} />
+        <Recorder />
         <dl className="status">
           <div>
             <dt>后端状态</dt>

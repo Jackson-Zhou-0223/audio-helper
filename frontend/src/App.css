@@ -90,3 +90,90 @@ dd[data-state="无法连接"] {
   line-height: 1.5;
   font-size: 14px;
 }
+
+.city-select {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 24px;
+  font-size: 14px;
+  color: #5b6b82;
+}
+
+.city-select input {
+  width: 100%;
+  border: 1px solid #d5deea;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 16px;
+  color: #142033;
+}
+
+.city-select input:focus {
+  outline: 2px solid #7aa2d6;
+  outline-offset: 1px;
+}
+
+.recorder {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.record-button {
+  width: 160px;
+  height: 160px;
+  border: 0;
+  border-radius: 50%;
+  background: #1f6feb;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  box-shadow: 0 10px 24px rgba(31, 111, 235, 0.28);
+}
+
+.record-button.is-recording {
+  background: #b42318;
+  box-shadow: 0 0 0 10px rgba(180, 35, 24, 0.16);
+}
+
+.recorder-status,
+.clip-meta {
+  margin: 0;
+  color: #4a5a70;
+  font-size: 14px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.recorder-error {
+  margin: 0;
+  color: #b42318;
+  font-size: 14px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.clip-panel {
+  width: 100%;
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+
+.clip-panel audio {
+  width: 100%;
+}
+
+.download-link {
+  color: #1f6feb;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.download-link:hover {
+  text-decoration: underline;
+}

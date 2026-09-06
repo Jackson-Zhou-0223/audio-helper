@@ -7,6 +7,10 @@ class HealthData(BaseModel):
     status: str = Field(examples=["ok"])
 
 
+class UploadData(BaseModel):
+    audio_id: str = Field(examples=["aud_7c2e9a1b2f4d4c0e"])
+
+
 class SuccessResponse(BaseModel):
     request_id: str
     data: Any

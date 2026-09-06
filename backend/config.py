@@ -34,6 +34,14 @@ class Settings(BaseSettings):
     backend_port: int = 8003
     cors_origins: str = "http://localhost:5175,http://127.0.0.1:5175"
 
+    audio_storage_dir: str = "storage/audio"
+    audio_ttl_hours: int = 24
+    max_audio_bytes: int = 5 * 1024 * 1024
+    min_audio_seconds: float = 1.0
+    max_audio_seconds: float = 60.0
+    ffprobe_timeout_seconds: float = 10.0
+    ffprobe_path: str = ""
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [item.strip() for item in self.cors_origins.split(",") if item.strip()]
