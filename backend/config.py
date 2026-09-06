@@ -1,11 +1,18 @@
-from functools import lru_cache
+from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+BACKEND_DIR = Path(__file__).resolve().parent
+ENV_FILE = BACKEND_DIR / ".env"
+
+_settings: "Settings | None" = None
+_env_mtime: float | None = None
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=ENV_FILE if ENV_FILE.is_file() else None,
         env_file_encoding="utf-8",
         extra="ignore",
     )
@@ -41,12 +48,32 @@ class Settings(BaseSettings):
     max_audio_seconds: float = 60.0
     ffprobe_timeout_seconds: float = 10.0
     ffprobe_path: str = ""
+    asr_timeout_seconds: float = 20.0
+    max_asr_base64_bytes: int = 10 * 1024 * 1024
+    extract_timeout_seconds: float = 15.0
+    extract_max_tokens: int = 1024
+
+    @field_validator(
+        "bailian_api_key",
+        "deepseek_api_key",
+        "amap_api_key",
+        mode="before",
+    )
+    @classmethod
+    def strip_secret(cls, value: object) -> str:
+        if value is None:
+            return ""
+        return str(value).strip().strip('"').strip("'")
 
     @property
     def cors_origin_list(self) -> list[str]:
         return [item.strip() for item in self.cors_origins.split(",") if item.strip()]
 
 
-@lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    global _settings, _env_mtime
+    mtime = ENV_FILE.stat().st_mtime if ENV_FILE.is_file() else None
+    if _settings is None or mtime != _env_mtime:
+        _settings = Settings()
+        _env_mtime = mtime
+    return _settings

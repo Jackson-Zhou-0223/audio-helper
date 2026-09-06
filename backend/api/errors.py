@@ -32,13 +32,25 @@ async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
 async def validation_error_handler(
     request: Request, exc: RequestValidationError
 ) -> JSONResponse:
-    stage = "upload" if request.url.path.rstrip("/") == "/upload" else "request"
+    path = request.url.path.rstrip("/")
+    if path == "/upload":
+        stage = "upload"
+        message = "请求缺少文件或字段类型不正确。"
+    elif path == "/asr":
+        stage = "asr"
+        message = "请求缺少字段或字段类型不正确。"
+    elif path == "/extract":
+        stage = "extract"
+        message = "请求缺少字段或字段类型不正确。"
+    else:
+        stage = "request"
+        message = "请求缺少字段或字段类型不正确。"
     return JSONResponse(
         status_code=422,
         content=error_payload(
             request,
             "VALIDATION_ERROR",
-            "请求缺少文件或字段类型不正确。",
+            message,
             stage,
         ),
     )

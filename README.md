@@ -30,10 +30,14 @@ python -m uvicorn main:app --reload --host 127.0.0.1 --port 8003
 python -m pytest
 ```
 
-当前 Mock 覆盖 `GET /health` 和 `POST /upload` 的成功/失败分支，不调用真实 ffprobe。Mock 通过不能证明真实录音校验、ASR、搜店或语音播报已跑通。
+当前 Mock 覆盖 `GET /health`、`POST /upload`、`POST /asr` 和 `POST /extract` 的成功/失败分支，不调用真实 ffprobe、百炼或 DeepSeek。Mock 通过不能证明真实录音校验、ASR、搜店或语音播报已跑通。
+
+`POST /asr` 按北京地域调用 `qwen3-asr-flash`。真实识别需要在 `backend/.env` 填写 `BAILIAN_API_KEY`，会产生调用费用；请仅在确认后手动执行。
+
+`POST /extract` 调用 DeepSeek `deepseek-v4-flash`（关闭思考，JSON 模式）。提示词在 `backend/prompts/extract.txt`。真实提取需要 `DEEPSEEK_API_KEY`，会产生调用费用；请仅在确认后手动执行。接口成功只返回五个业务字段；`party_count`、`incomplete_reason` 只出现在模型原始 JSON 里，不会出现在成功响应的 `data` 中。
 
 `POST /upload` 用本机 `ffprobe` 探测真实容器、编码和时长（只探测，不转码）。Windows 可用 `winget install Gyan.FFmpeg`。后端会在 PATH、WinGet 安装目录和 `FFPROBE_PATH` 中查找，不要求当前终端一定能直接运行 `ffprobe`。缺少 Duration 标签的浏览器 WebM 不会因此直接判为非法，会再看音频流时长或数据包时间戳。
 
 ## 真实接口验收
 
-配置密钥后的 ASR、DeepSeek、高德、TTS 与前端全链路验收，等对应接口开发完成后再做。本轮只验收健康检查和页面打开。
+`POST /extract` 可在后端独立用 http://127.0.0.1:8003/docs 手工验收（需 `DEEPSEEK_API_KEY`）。前端本轮未接入提取接口。ASR、高德、TTS 与全链路验收仍等对应接口完成后再做。
